@@ -1,2 +1,2 @@
 # ng-stepper-basic
-A Stepper Component for Angular that is fairly basic. It uses bootstrap for style.
+Stepper Components for Angular. You will love them. They use bootstrap for styling.
