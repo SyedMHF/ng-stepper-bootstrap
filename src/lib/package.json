@@ -1,0 +1,28 @@
+{
+  "name": "ng-stepper-bootstrap",
+  "version": "4.0.0-rc.2",
+  "description": "Angular Stepper Components",
+  "main": "./bundles/ngstepper.umd.js",
+  "module": "./index.js",
+  "typings": "./index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swaggerloaf/ng-stepper-bootstrap.git"
+  },
+  "keywords": [
+    "angular",
+    "stepper",
+    "bootstrap",
+    "components"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/swaggerloaf/ng-stepper-bootstrap/issues"
+  },
+  "homepage": "https://github.com/swaggerloaf/ng-stepper-bootstrap#readme",
+  "peerDependencies": {
+    "@angular/core": "4.0.0-rc.2",
+    "@angular/common": "4.0.0-rc.2",
+    "@angular/http": "4.0.0-rc.2"
+  }
+}
