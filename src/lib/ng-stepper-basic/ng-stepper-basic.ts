@@ -1,212 +1,87 @@
 import {
-  Component,
-  ViewEncapsulation,
-  Input,
-  HostBinding,
-  ChangeDetectionStrategy,
-  ElementRef,
-  Renderer,
-  NgModule,
-  ModuleWithProviders, Directive,
+    NgModule,
+    ModuleWithProviders,
+    Component,
+    ChangeDetectionStrategy,
+    HostBinding,
+    Input,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-//import {MdRippleModule, coerceBooleanProperty, CompatibilityModule} from '../core';
 
 /**
- * Directive whose purpose is to add the bs- CSS styling to this selector.
- */
-@Directive({
-  selector: 'button[btn btn-default], a[btn btn-default]',
-  host: {
-    '[class.mat-button]': 'true'
-  }
-})
-export class NgStepperDefaultCssStyler {}
-//export class MdButtonCssMatStyler {}
-
-/**
- * Directive whose purpose is to add the bs- CSS styling to this selector.
- */
-@Directive({
-  selector:
-      'button[btn btn-block], a[btn btn-block]',
-  host: {
-    '[class.mat-raised-button]': 'true'
-  }
-})
-export class NgStepperDefaultCssStyler {}
-//export class MdRaisedButtonCssMatStyler {}
-
-/**
- *  NgStepperBasic.
+ * <ng-stepper-basic> component.
  */
 @Component({
   moduleId: module.id,
-  selector: 'button[btn btn-primary], button[btn btn-default],
-//            'button[md-fab], button[md-mini-fab],' +
-//            'button[mat-button], button[mat-raised-button], button[mat-icon-button],' +
-//            'button[mat-fab], button[mat-mini-fab]',
-  host: {
-    '[disabled]': 'disabled',
-    '[class.mat-button-focus]': '_isKeyboardFocused',
-    '(mousedown)': '_setMousedown()',
-    '(focus)': '_setKeyboardFocus()',
-    '(blur)': '_removeKeyboardFocus()',
-  },
-  templateUrl: 'button.html',
-  styleUrls: ['button.css'],
-  encapsulation: ViewEncapsulation.None,
+  selector: 'ng-stepper-basic',
+  templateUrl: 'ng-stepper-basic.html',
+  styleUrls: ['ng-stepper-basic.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MdButton {
-  private _color: string;
+export class NgStepperBasic {
+  /** Color of the progress bar. */
+  @Input() color: 'primary' | 'accent' | 'warn' = 'primary';
 
-  /** Whether the button has focus from the keyboard (not the mouse). Used for class binding. */
-  _isKeyboardFocused: boolean = false;
+  private _value: number = 0;
 
-  /** Whether a mousedown has occurred on this element in the last 100ms. */
-  _isMouseDown: boolean = false;
-
-  /** Whether the button is round. */
-  _isRoundButton: boolean = ['icon-button', 'fab', 'mini-fab'].some(suffix => {
-    let el = this._getHostElement();
-    return el.hasAttribute('md-' + suffix) || el.hasAttribute('mat-' + suffix);
-  });
-
-  /** Whether the ripple effect on click should be disabled. */
-  private _disableRipple: boolean = false;
-  private _disabled: boolean = null;
-
-  /** Whether the ripple effect for this button is disabled. */
+  /** Value of the progressbar. Defaults to zero. Mirrored to aria-valuenow. */
   @Input()
-  get disableRipple() { return this._disableRipple; }
-  set disableRipple(v) { this._disableRipple = coerceBooleanProperty(v); }
+  @HostBinding('attr.aria-valuenow')
+  get value() { return this._value; }
+  set value(v: number) { this._value = clamp(v || 0); }
 
-  /** Whether the button is disabled. */
+  private _bufferValue: number = 0;
+
+  /** Buffer value of the progress bar. Defaults to zero. */
   @Input()
-  get disabled() { return this._disabled; }
-  set disabled(value: boolean) { this._disabled = coerceBooleanProperty(value) ? true : null; }
+  get bufferValue() { return this._bufferValue; }
+  set bufferValue(v: number) { this._bufferValue = clamp(v || 0); }
 
-  constructor(private _elementRef: ElementRef, private _renderer: Renderer) { }
-
-  /** The color of the button. Can be `primary`, `accent`, or `warn`. */
+  /**
+   * Mode of the progress bar.
+   *
+   * Input must be one of these values: determinate, indeterminate, buffer, query, defaults to
+   * 'determinate'.
+   * Mirrored to mode attribute.
+   */
   @Input()
-  get color(): string { return this._color; }
-  set color(value: string) { this._updateColor(value); }
+  @HostBinding('attr.mode')
+  mode: 'determinate' | 'indeterminate' | 'buffer' | 'query' = 'determinate';
 
-  _setMousedown() {
-    // We only *show* the focus style when focus has come to the button via the keyboard.
-    // The Material Design spec is silent on this topic, and without doing this, the
-    // button continues to look :active after clicking.
-    // @see http://marcysutton.com/button-focus-hell/
-    this._isMouseDown = true;
-    setTimeout(() => { this._isMouseDown = false; }, 100);
+  /** Gets the current transform value for the progress bar's primary indicator. */
+  _primaryTransform() {
+    let scale = this.value / 100;
+    return {transform: `scaleX(${scale})`};
   }
 
-  _updateColor(newColor: string) {
-    this._setElementColor(this._color, false);
-    this._setElementColor(newColor, true);
-    this._color = newColor;
-  }
-
-  _setElementColor(color: string, isAdd: boolean) {
-    if (color != null && color != '') {
-      this._renderer.setElementClass(this._getHostElement(), `mat-${color}`, isAdd);
-    }
-  }
-
-  _setKeyboardFocus() {
-    this._isKeyboardFocused = !this._isMouseDown;
-  }
-
-  _removeKeyboardFocus() {
-    this._isKeyboardFocused = false;
-  }
-
-  /** Focuses the button. */
-  focus(): void {
-    this._renderer.invokeElementMethod(this._getHostElement(), 'focus');
-  }
-
-  _getHostElement() {
-    return this._elementRef.nativeElement;
-  }
-
-  _isRippleDisabled() {
-    return this.disableRipple || this.disabled;
-  }
-}
-
-/**
- * Raised Material design button.
- */
-@Component({
-  moduleId: module.id,
-  selector: `a[md-button], a[md-raised-button], a[md-icon-button], a[md-fab], a[md-mini-fab],
-             a[mat-button], a[mat-raised-button], a[mat-icon-button], a[mat-fab], a[mat-mini-fab]`,
-  host: {
-    '[attr.disabled]': 'disabled',
-    '[attr.aria-disabled]': '_isAriaDisabled',
-    '[class.mat-button-focus]': '_isKeyboardFocused',
-    '(mousedown)': '_setMousedown()',
-    '(focus)': '_setKeyboardFocus()',
-    '(blur)': '_removeKeyboardFocus()',
-    '(click)': '_haltDisabledEvents($event)',
-  },
-  templateUrl: 'button.html',
-  styleUrls: ['button.css'],
-  encapsulation: ViewEncapsulation.None
-})
-export class MdAnchor extends MdButton {
-  constructor(elementRef: ElementRef, renderer: Renderer) {
-    super(elementRef, renderer);
-  }
-
-  /** @docs-private */
-  @HostBinding('tabIndex')
-  get tabIndex(): number {
-    return this.disabled ? -1 : 0;
-  }
-
-  get _isAriaDisabled(): string {
-    return this.disabled ? 'true' : 'false';
-  }
-
-  _haltDisabledEvents(event: Event) {
-    // A disabled button shouldn't apply any actions
-    if (this.disabled) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
+  /**
+   * Gets the current transform value for the progress bar's buffer indicator.  Only used if the
+   * progress mode is set to buffer, otherwise returns an undefined, causing no transformation.
+   */
+  _bufferTransform() {
+    if (this.mode == 'buffer') {
+      let scale = this.bufferValue / 100;
+      return {transform: `scaleX(${scale})`};
     }
   }
 }
+
+/** Clamps a value to be between two numbers, by default 0 and 100. */
+function clamp(v: number, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, v));
+}
+
 
 @NgModule({
-  imports: [CommonModule, MdRippleModule, CompatibilityModule],
-  exports: [
-    MdButton, MdAnchor,
-    CompatibilityModule,
-    MdButtonCssMatStyler,
-    MdRaisedButtonCssMatStyler,
-    MdIconButtonCssMatStyler,
-    MdFabCssMatStyler,
-    MdMiniFabCssMatStyler
-  ],
-  declarations: [
-    MdButton,
-    MdAnchor,
-    MdButtonCssMatStyler,
-    MdRaisedButtonCssMatStyler,
-    MdIconButtonCssMatStyler,
-    MdFabCssMatStyler,
-    MdMiniFabCssMatStyler
-  ],
+  imports: [CommonModule, CompatibilityModule],
+  exports: [NgStepperBasic, CompatibilityModule],
+  declarations: [NgStepperBasic],
 })
-export class MdButtonModule {
+export class NgStepperBasicModule {
   /** @deprecated */
   static forRoot(): ModuleWithProviders {
     return {
-      ngModule: MdButtonModule,
+      ngModule: NgStepperBasicModule,
       providers: []
     };
   }
